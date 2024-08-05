@@ -1,12 +1,11 @@
 import os
 import json
 from PIL import Image
-
 import numpy as np
 import tensorflow as tf
 import streamlit as st
 
-
+# Define the working directory
 working_dir = os.path.dirname(os.path.abspath(__file__))
 
 # Correct the model path (ensure no invisible characters)
@@ -21,11 +20,9 @@ with open(class_indices_path, 'r') as f:
     class_indices = json.load(f)
 
 # Function to Load and Preprocess the Image using Pillow
-def load_and_preprocess_image(image_path, target_size=(224, 224)):
-    # Load the image
-    img = Image.open(image_path)
+def load_and_preprocess_image(image, target_size=(224, 224)):
     # Resize the image
-    img = img.resize(target_size)
+    img = image.resize(target_size)
     # Convert the image to a numpy array
     img_array = np.array(img)
     # Add batch dimension
@@ -34,15 +31,13 @@ def load_and_preprocess_image(image_path, target_size=(224, 224)):
     img_array = img_array.astype('float32') / 255.
     return img_array
 
-
 # Function to Predict the Class of an Image
-def predict_image_class(model, image_path, class_indices):
-    preprocessed_img = load_and_preprocess_image(image_path)
+def predict_image_class(model, image, class_indices):
+    preprocessed_img = load_and_preprocess_image(image)
     predictions = model.predict(preprocessed_img)
     predicted_class_index = np.argmax(predictions, axis=1)[0]
     predicted_class_name = class_indices[str(predicted_class_index)]
     return predicted_class_name
-
 
 # Streamlit App
 st.title('Plant Disease Classifier')
@@ -60,5 +55,5 @@ if uploaded_image is not None:
     with col2:
         if st.button('Classify'):
             # Preprocess the uploaded image and predict the class
-            prediction = predict_image_class(model, uploaded_image, class_indices)
-            st.success(f'Prediction: {str(prediction)}')
+            prediction = predict_image_class(model, image, class_indices)
+            st.success(f'Prediction: {prediction}')
